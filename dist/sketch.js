@@ -2,15 +2,24 @@
 
 // sizing and resizing dynamically is happening in css #mycanvas and #parentdiv - overrides what's happening in here
 
+let treeSteps = 3;
+let treeRows = 2;
+let numberOfTreeButtons = treeSteps * treeRows;// automatically generate circular synth based on this
+let treeButtonPositions = []; // position to draw the buttons
 
-let numberOfButtons = 7;// automatically generate circular synth based on this
+let birdSteps = 8;
+let birdRows = 3;
+let birdPositions = [];
 
 let endedTouches = []; // array to store ended touches in
-let buttonPositions = []; // position to draw the buttons
-let buttonState = []; //store state of the buttons
-let buttonColour  = []; // colour of the buttons at any given time
-let buttonOffColour = []; // default off colours
-let buttonOnColour = []; // default on colours
+
+let buttonState = []; //store state of the buttons - don't think I'm using this right now
+let buttonColour = []; // colour of the tree buttons at any given time
+let buttonOffColour; // default off colours for tree buttons
+let buttonOnColour; // default on colours for tree buttons
+let treeCentreColour; // live state of tree centre button colour
+let treeCentreOffColour;
+let treeCentreOnColour;
 let synthState = []; // we need to store whether a note is playing because the synth is polyphonic and it will keep accepting on messages with every touch or moved touch and we won't be able to switch them all off
 let radius; // radius of the buttons
 let offsetT; // to store the difference between x and y readings once menus are taken into account
@@ -42,25 +51,28 @@ let whichKey = [0,0,0,0,0,0,0,0,0]; // array ensures only one trigger per qwerty
 let mouseState = []; // variable to store mouse clicks and drags in
 let mouseClick = false;
 
-let tree_x;
-let tree_y;
-let sun_x;
-let sun_y;
+let tree_x; // position of tree
+let tree_y; // position of tree
+let sun_x; // position of sun
+let sun_y; // position of sun
+let grassPosition; // position of grass, set in setup as uses p5 function
 
-let sky, trunk, bird_on, bird, grass, plant, sun;
+let birdImage, tree2image; // current image for these items
+
+let sky, birdOn, birdOff, grass, tree, tree2; // to store images in
 
 function preload() {
   sky = loadImage(`/images/background.jpg`);
-  trunk = loadImage(`/images/treetrunk.jpg`);
-  bird_on = loadImage(`/images/bird_on.png`);
-  bird = loadImage(`/images/bird.png`);
+  birdOn = loadImage(`/images/bird_on.png`);
+  birdOff = loadImage(`/images/bird.png`);
   grass = loadImage(`/images/grass.jpg`);
-  plant = loadImage(`/images/plant.png`);
-  sun = loadImage(`/images/sun.png`);
+  tree = loadImage(`/images/tree.png`);
+  tree2off = loadImage(`/images/tree2_off.png`);
+  tree2on = loadImage(`/images/tree2_off.png`);
 }
 
 function setup() {  // setup p5
-  step = TWO_PI/numberOfButtons; // in radians the equivalent of 360/6 - this will be used to draw the circles position
+  step = TWO_PI/numberOfTreeButtons; // in radians the equivalent of 360/6 - this will be used to draw the circles position
   console.log(`step = ${step}`);
   scale = pentatonic; // sets the default scale on load
 
@@ -90,17 +102,22 @@ function setup() {  // setup p5
   el.addEventListener("mousemove", handleMouseMove);
   offsetT = el.getBoundingClientRect(); // get the size and position of the p5parent div so i can use offset top to work out where touch and mouse actually need to be
 
-  colorMode(HSB, numberOfButtons + 1); // specify HSB colormode and set the range to be between 0 and numberOfButtons
   noStroke(); // no stroke on the drawings
 
   radius = width/14;
   r = width/5;
-  tree_x = (width/36) * 11;
-  tree_y = (height/18) * 5;
-  sun_x = (width/3)*2;
-  sun_y = height/16;
+  tree_x = (width/36) * 13;
+  tree_y = (height/18) * 11;
+  birdImage = birdOff; // set default image
+  tree2image = tree2off;
+  grassPosition = (height/10)*9;
+  buttonOffColour = 'rgba(0, 200, 70, 0.3)'; // default off colours for tree buttons
+  buttonOnColour = 'rgba(255, 255, 0, 0.5)'; // default on colours for tree buttons
+  treeCentreColour = 'rgba(0, 255, 0, 0.5)'; // live state of tree centre button colour
+  treeCentreOffColour = 'rgba(0, 255, 0, 0.5)';
+  treeCentreOnColour = 'rgba(255, 255, 0, 0.5)';
 
-  for (let i = 0; i < numberOfButtons; i++) { // for each button build mouseState default array
+  for (let i = 0; i < numberOfTreeButtons; i++) { // for each button build mouseState default array
     mouseState.push(0);
   }
 
@@ -119,99 +136,127 @@ function handleOrientationEvent() {
 }
 
 function welcomeScreen() {
-  background(1, 0, 4); // background is grey (remember 5 is maximum because of the setup of colorMode)
+  background(150); // background is grey (remember 5 is maximum because of the setup of colorMode)
   textSize(32);
   textAlign(CENTER, CENTER);
   text("Imagined Landscapes. Touch screen or click mouse or use keys QWERTYU", width/10, height/10, (width/10) * 8, (height/10) * 8);
 }
 
 function createButtonPositions() {
-  for(let i = 0; i < numberOfButtons; i++) {
-    //convert polar coordinates to cartesian coordinates
-    let _x = r * sin(angle);
-    let _y = r * cos(angle);
-    let theNote = scale[i] + octave + theKey; // the note plus the octave plus the offset from the key menu
 
-    console.log(`position ${i} x = ${_x} y = ${_y}`);
+  let treeStepStart = tree_x - radius*2.5;
+  let treeStepIncrement = radius*2.3;
+  let treeStepDistance = treeStepStart;
+  let treeRowIncrement = radius*2.5;
+  let treeRowDistance = treeRowIncrement;
+  let treeRowPosition = tree_y - radius*2;
 
-    //create our buttonPositions array
-    buttonPositions.push({
-      x: _x + tree_x,
-      y: _y + tree_y
-    });
-
-    buttonState.push(0); //create default state of the buttons array
-    buttonColour.push(i); // set default colour of the buttons
-    buttonOffColour.push(i); // create default off colours
-    buttonOnColour.push(numberOfButtons); // create default on colours
-    synthState.push(0); //create default state of the synth array
-    notes.push(allTheNotes[theNote]); //create the scale that we are using
-
-    //increase angle by step size
-    angle = angle + step;
-  }
-  console.log(notes);
-  console.log("offset height = " + offsetT.top);
-  buttonPositions.reverse(); // reverse the array because I want to draw the other way around
-
-  // the following is because I want the first button to be the bottom one, and otherwise the bottom one is the last
-  let firstButton = buttonPositions.pop(); //remove last element from the array
-  buttonPositions.unshift(firstButton); // and put it at the front
-
-}
-
-/*
-
-function draw() {  // p5 draw function - the traditional way to do this in p5 - this is called 60 times a second so needed if want to animate
-  background(1, 0, 4); // background is grey (remmember 5 is maximum)
-
-  for (let i = 0; i < buttonPositions.length; i++) {
-    fill(buttonColour[i], 4, 4);
-    ellipse(buttonPositions[i].x, buttonPositions[i].y, radius * 2);
-  }
-
-// ********** this example draws a circle for each touch *************
-
-  for (let t of ongoingTouches) { // cycle through the touches
-    //console.log(t) // log the touches if you want to for debugging
-    fill(t.identifier % 5, 4, 4); // each touch point's colour relates to touch id. however remember that on iOs the id numbers are huge so this doesn't work so well
-    ellipse(t.clientX, t.clientY, 100); //make a circle at the position of the touch
-    fill(0, 0, 0); // set colour to black
-    //text(t.identifier, t.clientX - 50, t.clientY - 50); // display the touch id on the screen (for debuggin)
-  }
-  for (let t of endedTouches) { // cycle through the end touches
-    let tDiff = millis() - t.time; // set tDiff to tell us how recently we stopped touching
-    if (tDiff < 1000) { // if we stopped touching within the last second
-      fill(t.id % 5, 4, 4); // set the colour based on the id of the touch that we ended
-      ellipse(t.x, t.y, map(tDiff, 0, 1000, 100, 0)); // the circle is drawn smaller and smaller depending on how much time elapsed since touch
+  for(let i = 0; i < treeRows; i++){
+    for(let i = 0; i < treeSteps; i++){
+      treeButtonPositions.push({
+        x: treeStepDistance,
+        y: treeRowPosition
+      });
+      treeStepDistance = treeStepDistance + treeStepIncrement;
     }
+    treeStepDistance = treeStepStart;
+    treeRowPosition = treeRowPosition + treeRowIncrement;
   }
 
-// ************************************************************************
+  for(let i = 0; i < treeButtonPositions.length; i++){
+    let theNote = scale[i] + octave + theKey; // the note plus the octave plus the offset from the key menu
+    buttonState.push(0); //create default state of the buttons array
+    synthState.push(0); //create default state of the synth array
+    buttonColour[i] = buttonOffColour;
+    notes.push(allTheNotes[theNote]); //create the scale that we are using
+  }
+
+
+
+  //this next bit sets the positions of the tree looper buttons - old code below
+
+  // for(let i = 0; i < numberOfTreeButtons; i++) {
+  //   //convert polar coordinates to cartesian coordinates
+  //   let _x = r * sin(angle);
+  //   let _y = r * cos(angle);
+  //   let theNote = scale[i] + octave + theKey; // the note plus the octave plus the offset from the key menu
+
+  //   console.log(`position ${i} x = ${_x} y = ${_y}`);
+
+  //   //create our treeButtonPositions array
+  //   treeButtonPositions.push({
+  //     x: _x + tree_x,
+  //     y: _y + tree_y
+  //   });
+
+  //   buttonState.push(0); //create default state of the buttons array
+  //   synthState.push(0); //create default state of the synth array
+  //   notes.push(allTheNotes[theNote]); //create the scale that we are using
+
+  //   //increase angle by step size
+  //   angle = angle + step;
+  // }
+  // console.log(notes);
+  // //console.log("offset height = " + offsetT.top);
+  // treeButtonPositions.reverse(); // reverse the array because I want to draw the other way around
+
+  // // the following is because I want the first button to be the bottom one, and otherwise the bottom one is the last
+  // let firstButton = treeButtonPositions.pop(); //remove last element from the array
+  // treeButtonPositions.unshift(firstButton); // and put it at the front
+
+  //*************** END OF TREE BUTTON POSITION CODE****************** */
+
+  //next the positions of the bird sequencer buttons
+
+  let birdStepStart = width/12;
+  let birdStepIncrement = width/8.5;
+  let birdStepDistance = birdStepStart;
+  let birdRowIncrement = height/10;
+  let birdRowDistance = birdRowIncrement;
+  let birdRowPosition = birdRowDistance;
+
+  for(let i = 0; i < birdRows; i++){
+    for(let i = 0; i < birdSteps; i++){
+      birdPositions.push({
+        x: birdStepDistance,
+        y: birdRowPosition
+      });
+      birdStepDistance = birdStepDistance + birdStepIncrement;
+    }
+    birdStepDistance = birdStepStart;
+    birdRowPosition = birdRowPosition + birdRowIncrement;
+  }
 
 }
-
-*/
-
 
 function drawSynth() { // instead of using the draw function at 60 frames a second we will call this function when something changes
-  //background(1, 0, 4); // background is grey (remember 5 is maximum)
-  let trunkwidth = width/6;
-  image(sky, 0, 0, width, height);
-  image(trunk, tree_x - (trunkwidth/2), tree_y, trunkwidth, height/2);
-  image(grass, 0, (height/5)*3, width, (height/5)*2);
-  image(sun, sun_x, sun_y, radius * 4, radius * 4);
-  image(plant, width/22, ((height/5)*3) - radius*1.5, radius*2, radius*2);
-  image(plant, (width/10) * 4, ((height/5)*3) - radius*1.3, radius*1.4, radius*1.4);
-  image(plant, (width/10) * 6, ((height/5)*3) - radius*1.8, radius*2.2, radius*2.2);
-  image(plant, (width/10) * 8, ((height/5)*3) - radius*1, radius*2, radius*2);
 
-  fill(2, 7, 4); // tree centre colour in HSB
-  ellipse(tree_x, tree_y, radius * 3); // loop change button - centre of the tree
-  for (let i = 0; i < numberOfButtons; i++) { // looper buttons on tree
-    fill(buttonColour[i], (numberOfButtons/4)*3, (numberOfButtons/4)*3);
-    ellipse(buttonPositions[i].x, buttonPositions[i].y, radius * 2);
+  let treewidth = (width/5)*3.5;
+  let treeheight = (width/5)*3;
+  let birdWidth = width/9;
+  let birdHeight = width/12;
+  let tree2width = width/6;
+
+  imageMode(CORNER);
+
+  image(sky, 0, 0, width, height); // place the sky image
+  imageMode(CENTER);
+  image(tree, tree_x, tree_y + (birdHeight/3), treewidth, treeheight); // place the tree image
+  imageMode(CORNER);
+  image(grass, 0, grassPosition, width, (height/5)*2); // place the grass image
+  image(tree2image, (width/10)*8, grassPosition - tree2width, tree2width, tree2width);
+
+  for (let i = 0; i < numberOfTreeButtons; i++) { // draw the looper buttons on tree
+    fill(buttonColour[i]);
+    ellipse(treeButtonPositions[i].x, treeButtonPositions[i].y, radius * 2);
   }
+
+  imageMode(CENTER);
+
+  for(let i = 0; i < birdPositions.length; i++){
+    image(birdImage, birdPositions[i].x, birdPositions[i].y, birdWidth, birdHeight);
+  }
+
 }
 
 function startAudio() {
@@ -244,8 +289,8 @@ function startAudio() {
 function handleMouseDown(e) {
   mouseClick = true;
   if(soundOn) {
-    for (let i = 0; i < numberOfButtons; i++) { // for each button
-      let d = dist(e.offsetX, e.offsetY, buttonPositions[i].x, buttonPositions[i].y); // compare the mouse to the button position -
+    for (let i = 0; i < numberOfTreeButtons; i++) { // for each button
+      let d = dist(e.offsetX, e.offsetY, treeButtonPositions[i].x, treeButtonPositions[i].y); // compare the mouse to the button position -
       if (d < radius) { // is the mouse where a button is?
         mouseState[i] = 1;
       }
@@ -258,15 +303,15 @@ function handleMouseDown(e) {
 
 function handleMouseUp() {
   mouseClick = false;
-  for (let i = 0; i < numberOfButtons; i++) { // for each button
+  for (let i = 0; i < numberOfTreeButtons; i++) { // for each button
     mouseState[i] = 0;
     }
   handleMouseAndKeys();
 }
 
 function handleMouseMove(e) {
-  for (let i = 0; i < numberOfButtons; i++) { // for each button
-    let d = dist(e.offsetX, e.offsetY, buttonPositions[i].x, buttonPositions[i].y); // compare the mouse to the button position - offset for vertical position in DOM
+  for (let i = 0; i < numberOfTreeButtons; i++) { // for each button
+    let d = dist(e.offsetX, e.offsetY, treeButtonPositions[i].x, treeButtonPositions[i].y); // compare the mouse to the button position - offset for vertical position in DOM
     if ((d < radius) && (mouseClick === true)) { // is the mouse where a button is and is the button clicked?
       mouseState[i] = 1;
     }else{
@@ -277,7 +322,7 @@ function handleMouseMove(e) {
 }
 
 function handleMouseAndKeys() {   // this function ensures only one "on" or "off" between mouse and key interactions
-  for (let i = 0; i < numberOfButtons; i++) { // for each button
+  for (let i = 0; i < numberOfTreeButtons; i++) { // for each button
     if((mouseState[i] === 1) && (whichKey[i] === 0)){ // if the button is on
       playSynth(i); // call play synth for that button
      }else if((mouseState[i] === 0) && (whichKey[i] === 1)){ // if the button is on
@@ -381,10 +426,10 @@ return -1;    // not found
 function touchButton() { // function to handle the touch interface with the buttons
 
   let _touches = ongoingTouches; //assign the changedTouches to an array called touches
-  let _buttonState = []; // array to store buttonstate in
+  let _treeButtonState = []; // array to store buttonstate in
 
-  for(let i = 0; i < numberOfButtons; i++) {
-    _buttonState.push(0);
+  for(let i = 0; i < numberOfTreeButtons; i++) {
+    _treeButtonState.push(0);
   }
 
   //**** first let's check if each touch is on a button, and store the state in our local variable */
@@ -393,25 +438,25 @@ function touchButton() { // function to handle the touch interface with the butt
 
   if(_touches.length != 0){ // if the touches array isn't empty
     for (var t = 0; t < _touches.length; t++) {  // for each touch
-      for (let i = 0; i < numberOfButtons; i++) { // for each button
-        let d = dist(_touches[t].clientX - offsetT.left, _touches[t].clientY - (offsetT.top * 1.1), buttonPositions[i].x, buttonPositions[i].y); // compare the touch to the button position
+      for (let i = 0; i < numberOfTreeButtons; i++) { // for each button
+        let d = dist(_touches[t].clientX - offsetT.left, _touches[t].clientY - (offsetT.top * 1.1), treeButtonPositions[i].x, treeButtonPositions[i].y); // compare the touch to the button position
         if (d < radius) { // is the touch where a button is?
-          _buttonState[i] = 1; // the the button is on
+          _treeButtonState[i] = 1; // the the button is on
         }else{
-          _buttonState[i] = _buttonState[i] + 0; // otherwise add a 0 to the state of that button (another toucch might have put it on you see)
+          _treeButtonState[i] = _treeButtonState[i] + 0; // otherwise add a 0 to the state of that button (another toucch might have put it on you see)
         }
       }
     }
   }
 
-  console.log(_buttonState);
+  console.log(_treeButtonState);
 
-  // ********** now our _buttonState array should accurately reflect the state of the touches and buttons so we can do something with it
+  // ********** now our _treeButtonState array should accurately reflect the state of the touches and buttons so we can do something with it
 
-  for (let i = 0; i < numberOfButtons; i++) { // for each button
+  for (let i = 0; i < numberOfTreeButtons; i++) { // for each button
     if(_touches.length === 0){ // if there are no touches at all
       stopSynth(i); // call stop synth for each button
-    }else if(_buttonState[i] === 1){ // otherwise if the button is on
+    }else if(_treeButtonState[i] === 1){ // otherwise if the button is on
       playSynth(i); // call play synth for that button
     }else{ // otherwise if the button is off
       stopSynth(i); // call stopsynth for that button
@@ -465,7 +510,7 @@ function playSynth(i) {
   if(synthState[i] === 0) { // if the synth is not playing that note at the moment
     synth.triggerAttack(notes[i]); // play the note
     synthState[i] = 1; // change the array to reflect that the note is playing
-    buttonColour[i] = buttonOnColour[i]; //change the colour of the button to on colour
+    buttonColour[i] = buttonOnColour; //change the colour of the button to on colour
     drawSynth();
   }
 }
@@ -474,7 +519,7 @@ function stopSynth(i) {
   if(synthState[i] === 1) { // if the synth is playing that note at the moment
     synth.triggerRelease(notes[i]); // stop the note
     synthState[i] = 0; // change the array to reflect that the note is playing
-    buttonColour[i] = buttonOffColour[i]; //change the colour of the button to off colour
+    buttonColour[i] = buttonOffColour; //change the colour of the button to off colour
     drawSynth();
   }
 }
