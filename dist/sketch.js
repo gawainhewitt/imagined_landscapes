@@ -677,25 +677,6 @@ console.log(`saved tempo  ${savedTempo}`);
 
 function retrieveSavedWork() {
 
-// if(a == 1){
-//   console.log("are we getting here?");
-// }
-
-// for(let i = 0; i < 6; i++){
-//   console.log(`savedTreeButtonsAsArray ${savedTreeButtonsAsArray[i]}`);
-
-//   if(savedTreeButtonsAsArray[i] === 1){
-//     console.log("are we getting here?");
-//   }
-// }
-
-// for(let i = numberOfTreeButtons - 1; i >= 0 ; i--){
-//   console.log(`savedTreeButtonsAsArray ${savedTreeButtonsAsArray[i]}`)
-//   if(savedTreeButtonsAsArray[i] === 1){
-//     console.log("are we getting here?");
-//   }
-// }
-
 for(let i = numberOfTreeButtons - 1; i >= 0 ; i--){
   let a = [0,0,0,0,0,0];
   if(savedTreeButtonsAsArray.length > 0){
@@ -703,23 +684,9 @@ for(let i = numberOfTreeButtons - 1; i >= 0 ; i--){
     }else{
     a[i] = 0;
     }
-    console.log("are we getting here?");
-    console.log(a[i]);
-  if(a[i] == 1){
+  if(a[i] === "1"){ // you need to put "" around the number because you are comparing a number with a string
     buttonPressed(i);
-    console.log("what the " + i);
-    console.log(`treeButtonPositions ${i} state = ${treeButtonPositions[i].state}`);
   }
 }
-
-
-// for(let i = 0; i < numberOfTreeButtons ; i++){
-
-//   console.log(`treeButtonPositions ${i} state = ${treeButtonPositions[i].state}`);
-//   if(treeButtonPositions[i].state == 1){
-//     console.log("are we getting here?");
-//     buttonPressed(i);
-//   }
-// }
 
 }

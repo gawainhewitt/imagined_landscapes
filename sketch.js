@@ -684,12 +684,8 @@ for(let i = numberOfTreeButtons - 1; i >= 0 ; i--){
     }else{
     a[i] = 0;
     }
-    console.log("are we getting here?");
-    console.log(a[i]);
-  if(a[i] == 1){ // for some reason i have to use the == here and I have no idea why...
+  if(a[i] === "1"){ // you need to put "" around the number because you are comparing a number with a string
     buttonPressed(i);
-    console.log("what the " + i);
-    console.log(`treeButtonPositions ${i} state = ${treeButtonPositions[i].state}`);
   }
 }
 
