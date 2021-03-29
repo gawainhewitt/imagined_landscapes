@@ -202,7 +202,7 @@ function welcomeScreen() {
   background(150); // background is grey (remember 5 is maximum because of the setup of colorMode)
   textSize(32);
   textAlign(CENTER, CENTER);
-  text("Imagined Landscapes. Touch screen or click mouse or use keys QWERTYU", width/10, height/10, (width/10) * 8, (height/10) * 8);
+  text("Imagined Landscapes. Touch screen or click mouse to start", width/10, height/10, (width/10) * 8, (height/10) * 8);
 }
 
 function createButtonPositions() {
@@ -406,7 +406,7 @@ function startAudio() {
         "mute": false,
         "volume": -10,
         "autostart": false,
-        "fadeIn": 0,
+        "fadeIn": 3,
         "fadeOut": 0,
         "loop": false,
         "playbackRate": 1,
@@ -419,7 +419,7 @@ function startAudio() {
         "mute": false,
         "volume": -10,
         "autostart": false,
-        "fadeIn": 0,
+        "fadeIn": 3,
         "fadeOut": 0,
         "loop": false,
         "playbackRate": 1,
@@ -432,7 +432,7 @@ function startAudio() {
         "mute": false,
         "volume": -10,
         "autostart": false,
-        "fadeIn": 0,
+        "fadeIn": 3,
         "fadeOut": 0,
         "loop": false,
         "playbackRate": 1,
@@ -440,6 +440,7 @@ function startAudio() {
       }
     );
     Tone.Transport.start();
+    retrieveSavedWork();
 }
 
 function playLooper() {
@@ -611,55 +612,114 @@ function isMouseInsideText(text, textX, textY) {
 //document.URL is the current url
 var url_ob = new URL(document.URL);
 
-var savedWork = url_ob.hash; //retrieve saved work from url
-var savedWorkNoHash = savedWork.replace('#', ''); // remove the hash from it leaving only the number
-//var savedSeqAsBinary = (parseInt(savedWorkNoHash, 16).toString(2)); //convert saved work to binary number
-var savedSeqAsArray = savedWorkNoHash.split('');
-//var totalSteps = rows * seqLength; // not sure if i need this on
-var convertedSeqAsArray = new Array ();
-
-
-// for (let i = rows-1; i >= 0; i--) {  // put the saved number into the sequence arrays - running this loop backwards to fill in from lowest number
-//   for (let j = seqLength-1; j >= 0; j--) {
-//       if (savedSeqAsArray.length > 0){
-//           seqSteps[i][j] = savedSeqAsArray.pop(); //remove last number from array and place in last place
-//       } else {   //we will likely run out of numbers unless the first step is used
-//           seqSteps[i][j] = "0"; //in that case place a 0
-//       }
-//       let input = document.getElementById(`row${i}step${j}`);
-//       console.log(input);
-//       if (seqSteps[i][j] === "1") {
-//           input.checked = true;
-//       } else {
-//           input.checked = false;
-//       }
-//   }
-// }
 
 let birdSaveSteps = new Array;
   birdSaveSteps[0] = new Array;
   birdSaveSteps[1] = new Array;
   birdSaveSteps[2] = new Array;
 
+for(let i = 0; i < birdRows; i++){ // setup and initialise the array
+  for(let j = 0; j < birdSteps; j++){
+    birdSaveSteps[i].push(0);
+  }
+}
+
+let treeStepsToSave = new Array;
+
+for(let i = 0; i < treeButtonPositions.length; i++){
+  treeStepsToSave[i].push(0);
+}
+
+
 function saveSeq() {
-  url_ob = new URL(document.URL);
   for(let i = 0; i < birdRows; i++){
     for(let j = 0; j < birdSteps; j++){
-      birdSaveSteps[i].push(birdStuff[i][j].state);
+      birdSaveSteps[i][j] = birdStuff[i][j].state;
     }
   }
 
+  for(let i = 0; i < treeButtonPositions.length; i++){
+    treeStepsToSave[i] = treeButtonPositions[i].state;
+  }
 
-  let row0 = birdSaveSteps[0].join('');
-  let row1 = birdSaveSteps[1].join('');
-  let row2 = birdSaveSteps[2].join('');
-  let seqAsBinary = `${row0}${row1}${row2}`;
-  console.log(seqAsBinary);
-  //let seqAsHex = seqAsBinary.toString(16);
-  // var seqAsHex = parseInt(seqAsBinary, 2).toString(16);
-  // console.log(seqAsHex);
-  // console.log(parseInt(seqAsHex, 16).toString(2)); //convert back to long binary
-  url_ob.hash = `#${seqAsBinary}`;
+  let birdRow0 = birdSaveSteps[0].join('');
+  let birdRow1 = birdSaveSteps[1].join('');
+  let birdRow2 = birdSaveSteps[2].join('');
+  let _treeRow = treeStepsToSave.join('');
+  let birdHex0 = parseInt(birdRow0, 2).toString(16);
+  let birdHex1 = parseInt(birdRow1, 2).toString(16);
+  let birdHex2 = parseInt(birdRow2, 2).toString(16);
+  let treeHex = parseInt(_treeRow, 2).toString(16);
+  let bpmToSave = parseInt(Tone.Transport.bpm.value, 10).toString(16);
+  let hexToSave = `${birdHex0}_${birdHex1}_${birdHex2}_${treeHex}_${bpmToSave}`;
+  console.log(hexToSave);
+  url_ob.hash = `#${hexToSave}`;
   var new_url = url_ob.href;
   document.location.href = new_url;
+}
+
+var savedWork = url_ob.hash; //retrieve saved work from url
+var savedWorkNoHash = savedWork.replace('#', ''); // remove the hash from it leaving only the number
+var savedWorkAsArray = savedWorkNoHash.split('_');
+console.log(savedWorkAsArray);
+var savedBirdRow0 = (parseInt(savedWorkAsArray[0], 16).toString(2)); // convert bird row 0 to binary
+console.log(`bird row 0 ${savedBirdRow0}`);
+var savedBirdRow1 = (parseInt(savedWorkAsArray[1], 16).toString(2));// convert bird row 1 to binary
+console.log(`bird row 1 ${savedBirdRow1}`);
+var savedBirdRow2 = (parseInt(savedWorkAsArray[2], 16).toString(2));// convert bird row 2 to binary
+console.log(`bird row 2 ${savedBirdRow2}`);
+var savedTreeButtons = (parseInt(savedWorkAsArray[3], 16).toString(2));// convert saved trees to binary
+console.log(`tree row  ${savedTreeButtons}`);
+let savedTreeButtonsAsArray = savedTreeButtons.split('');
+console.log(`savedTreeButtonsAsArray ${savedTreeButtonsAsArray}`);
+var savedTempo = (parseInt(savedWorkAsArray[4], 16).toString(10));// convert tempo to decimal
+console.log(`saved tempo  ${savedTempo}`);
+
+function retrieveSavedWork() {
+
+// if(a == 1){
+//   console.log("are we getting here?");
+// }
+
+// for(let i = 0; i < 6; i++){
+//   console.log(`savedTreeButtonsAsArray ${savedTreeButtonsAsArray[i]}`);
+
+//   if(savedTreeButtonsAsArray[i] === 1){
+//     console.log("are we getting here?");
+//   }
+// }
+
+// for(let i = numberOfTreeButtons - 1; i >= 0 ; i--){
+//   console.log(`savedTreeButtonsAsArray ${savedTreeButtonsAsArray[i]}`)
+//   if(savedTreeButtonsAsArray[i] === 1){
+//     console.log("are we getting here?");
+//   }
+// }
+
+for(let i = numberOfTreeButtons - 1; i >= 0 ; i--){
+  let a = [0,0,0,0,0,0];
+  if(savedTreeButtonsAsArray.length > 0){
+    a[i] = savedTreeButtonsAsArray.pop();
+    }else{
+    a[i] = 0;
+    }
+    console.log("are we getting here?");
+    console.log(a[i]);
+  if(a[i] == 1){
+    buttonPressed(i);
+    console.log("what the " + i);
+    console.log(`treeButtonPositions ${i} state = ${treeButtonPositions[i].state}`);
+  }
+}
+
+
+// for(let i = 0; i < numberOfTreeButtons ; i++){
+
+//   console.log(`treeButtonPositions ${i} state = ${treeButtonPositions[i].state}`);
+//   if(treeButtonPositions[i].state == 1){
+//     console.log("are we getting here?");
+//     buttonPressed(i);
+//   }
+// }
+
 }
