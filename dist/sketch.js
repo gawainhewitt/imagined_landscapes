@@ -55,15 +55,15 @@ let birdWidth;
 let birdHeight;
 let tree2width;
 
-let one = 'ha1';
-let two = 'ha2';
-let three = 'ha3';
-let four = 'he1';
-let five = 'he2';
-let six = 'he3';
-let s1 = 'bubbles';
-let s2 = 'bubbles';
-let s3 = 'bubbles';
+let one = 'loop1_5bars';
+let two = 'loop2_2bars';
+let three = 'loop3_2bars';
+let four = 'loop4_2bars';
+let five = 'loop5_14bars';
+let six = 'loop6_free';
+let s1 = 'student_bird';
+let s2 = 'student_bird2';
+let s3 = 'student_bird3';
 
 const player1 = new Tone.Player().toDestination();
 const player2 = new Tone.Player().toDestination();
@@ -81,7 +81,7 @@ let seqPlayerArray = [seqRow1player, seqRow2player, seqRow3player];
 
 Tone.Transport.scheduleRepeat(repeat, '8n'); // call our function 'repeat' every x time (8n or an 8th note in this case)
 Tone.Transport.scheduleRepeat(playLooper, '1m');
-Tone.Transport.bpm.value = 70;
+Tone.Transport.bpm.value = 85;
 console.log(`bpm ${Math.round(Tone.Transport.bpm.value)}`);
 
 let slower;
@@ -569,7 +569,7 @@ let index = 0;
 
     const sampler = new Tone.Sampler({
       urls: {
-        C3: "bubbles.mp3",
+        C3: "student_bird3.mp3",
 
       },
       baseUrl: "/sounds/",
@@ -658,27 +658,32 @@ function saveSeq() {
   document.location.href = new_url;
 }
 
+
+function retrieveSavedWork() {
+
 var savedWork = url_ob.hash; //retrieve saved work from url
 var savedWorkNoHash = savedWork.replace('#', ''); // remove the hash from it leaving only the number
 var savedWorkAsArray = savedWorkNoHash.split('_');
 console.log(savedWorkAsArray);
 var savedBirdRow0 = (parseInt(savedWorkAsArray[0], 16).toString(2)); // convert bird row 0 to binary
-console.log(`bird row 0 ${savedBirdRow0}`);
-var savedBirdRow1 = (parseInt(savedWorkAsArray[1], 16).toString(2));// convert bird row 1 to binary
-console.log(`bird row 1 ${savedBirdRow1}`);
-var savedBirdRow2 = (parseInt(savedWorkAsArray[2], 16).toString(2));// convert bird row 2 to binary
-console.log(`bird row 2 ${savedBirdRow2}`);
+var savedBirdRow1 = (parseInt(savedWorkAsArray[1], 16).toString(2)); // convert bird row 0 to binary
+var savedBirdRow2 = (parseInt(savedWorkAsArray[2], 16).toString(2)); // convert bird row 0 to binary
+var savedBirdRow = new Array;
+savedBirdRow[0] = savedBirdRow0.split(''); // convert to array
+console.log(`bird row 0 ${savedBirdRow[0]}`);
+savedBirdRow[1] = savedBirdRow1.split(''); // convert to array
+console.log(`bird row 1 ${savedBirdRow[1]}`);
+savedBirdRow[2] = savedBirdRow2.split(''); // convert to array
+console.log(`bird row 2 ${savedBirdRow[2]}`);
 var savedTreeButtons = (parseInt(savedWorkAsArray[3], 16).toString(2));// convert saved trees to binary
 console.log(`tree row  ${savedTreeButtons}`);
-let savedTreeButtonsAsArray = savedTreeButtons.split('');
+let savedTreeButtonsAsArray = savedTreeButtons.split(''); // convert to array
 console.log(`savedTreeButtonsAsArray ${savedTreeButtonsAsArray}`);
 var savedTempo = (parseInt(savedWorkAsArray[4], 16).toString(10));// convert tempo to decimal
 console.log(`saved tempo  ${savedTempo}`);
 
-function retrieveSavedWork() {
-
 for(let i = numberOfTreeButtons - 1; i >= 0 ; i--){
-  let a = [0,0,0,0,0,0];
+  let a = [];
   if(savedTreeButtonsAsArray.length > 0){
     a[i] = savedTreeButtonsAsArray.pop();
     }else{
@@ -687,6 +692,37 @@ for(let i = numberOfTreeButtons - 1; i >= 0 ; i--){
   if(a[i] === "1"){ // you need to put "" around the number because you are comparing a number with a string
     buttonPressed(i);
   }
+}
+
+for(let i = 0; i < birdRows; i++){
+  console.log(`am i here? birdRow ${i}`);
+  for(let j = birdSteps - 1; j >= 0 ; j--){
+    let a = [];
+    console.log(`savedBirdRow ${i} = ${savedBirdRow[i]}`);
+    if(savedBirdRow[i].length > 0){
+      a[j] = savedBirdRow[i].pop();
+      }else{
+      a[j] = 0;
+      }
+    if(a[j] === "1"){ // you need to put "" around the number because you are comparing a number with a string
+      seqPressed(i, j);
+    }
+  }
+}
+
+if(savedTempo){
+  Tone.Transport.bpm.value = savedTempo;
+
+  setSpeed(Tone.Transport.bpm.value);
+  console.log(`bpm ${Math.round(Tone.Transport.bpm.value)}`);
+  bpmShow = true;
+  //drawSynth();
+  setTimeout(() => {
+    bpmShow = false;
+    faster.colour = 'rgba(255, 255, 255, 0.9)';
+    drawSynth();
+  }, 1000);
+
 }
 
 }
