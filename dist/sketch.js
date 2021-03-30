@@ -1,5 +1,7 @@
 // sizing and resizing dynamically is happening in css #mycanvas and #parentdiv - overrides what's happening in here
 
+//getting there!
+
 let theVolume = -10;
 let treeSteps = 3;
 let treeRows = 2;
@@ -710,11 +712,11 @@ for(let i = 0; i < birdRows; i++){
   }
 }
 
-if(savedTempo){
+if(isNaN(savedTempo) === false){
   Tone.Transport.bpm.value = savedTempo;
 
   setSpeed(Tone.Transport.bpm.value);
-  console.log(`bpm ${Math.round(Tone.Transport.bpm.value)}`);
+  console.log(`saved bpm ${Math.round(Tone.Transport.bpm.value)}`);
   bpmShow = true;
   //drawSynth();
   setTimeout(() => {
