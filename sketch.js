@@ -1,5 +1,7 @@
 // sizing and resizing dynamically is happening in css #mycanvas and #parentdiv - overrides what's happening in here
 
+//getting there!
+
 let theVolume = -10;
 let treeSteps = 3;
 let treeRows = 2;
