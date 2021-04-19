@@ -63,9 +63,9 @@ let three = 'loop3_2bars';
 let four = 'loop4_2bars';
 let five = 'loop5_14bars';
 let six = 'loop6_free';
-let s1 = 'student_bird';
-let s2 = 'student_bird2';
-let s3 = 'student_bird3';
+let s1 = 'step1';
+let s2 = 'step2';
+let s3 = 'step3';
 
 const player1 = new Tone.Player().toDestination();
 const player2 = new Tone.Player().toDestination();
@@ -408,7 +408,7 @@ function startAudio() {
         "mute": false,
         "volume": -10,
         "autostart": false,
-        "fadeIn": 3,
+        "fadeIn": 0,
         "fadeOut": 0,
         "loop": false,
         "playbackRate": 1,
@@ -421,7 +421,7 @@ function startAudio() {
         "mute": false,
         "volume": -10,
         "autostart": false,
-        "fadeIn": 3,
+        "fadeIn": 0,
         "fadeOut": 0,
         "loop": false,
         "playbackRate": 1,
@@ -434,7 +434,7 @@ function startAudio() {
         "mute": false,
         "volume": -10,
         "autostart": false,
-        "fadeIn": 3,
+        "fadeIn": 0,
         "fadeOut": 0,
         "loop": false,
         "playbackRate": 1,
@@ -571,7 +571,7 @@ let index = 0;
 
     const sampler = new Tone.Sampler({
       urls: {
-        C3: "student_bird3.mp3",
+        C3: "step3.mp3",
 
       },
       baseUrl: "/sounds/",
