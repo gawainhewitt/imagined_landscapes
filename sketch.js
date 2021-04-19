@@ -80,10 +80,9 @@ const seqRow3player = new Tone.Player().toDestination();
 let playerArray = [player1, player2, player3, player4, player5, player6];
 
 let seqPlayerArray = [seqRow1player, seqRow2player, seqRow3player];
-
-Tone.Transport.scheduleRepeat(repeat, '8n'); // call our function 'repeat' every x time (8n or an 8th note in this case)
-Tone.Transport.scheduleRepeat(playLooper, '1m');
-Tone.Transport.bpm.value = 85;
+let originalTempo = 85;
+Tone.Transport.bpm.value = originalTempo;
+Tone.Transport.loopEnd.value = "8m";
 console.log(`bpm ${Math.round(Tone.Transport.bpm.value)}`);
 
 let slower;
@@ -107,15 +106,15 @@ function preload() {
 
   buffers = new Tone.ToneAudioBuffers({
     urls: {
-      A1: `${one}.mp3`,
-      A2: `${two}.mp3`,
-      A3: `${three}.mp3`,
-      A4: `${four}.mp3`,
-      A5: `${five}.mp3`,
-      A6: `${six}.mp3`,
-      S1: `${s1}.mp3`,
-      S2: `${s2}.mp3`,
-      S3: `${s3}.mp3`
+      A1: `${one}.flac`,
+      A2: `${two}.flac`,
+      A3: `${three}.flac`,
+      A4: `${four}.flac`,
+      A5: `${five}.flac`,
+      A6: `${six}.flac`,
+      S1: `${s1}.flac`,
+      S2: `${s2}.flac`,
+      S3: `${s3}.flac`
     },
     //onload:  () => welcomeScreen(), // initial screen for project - also allows an elegant place to put in the Tone.start() command.,
     baseUrl: "/sounds/"
@@ -309,150 +308,157 @@ function drawSynth(step) { // instead of using the draw function at 60 frames a 
 }
 
 function startAudio() {
-    Tone.start(); // we need this to allow audio to start.
-    soundOn = true;
-    drawSynth();
-    player1.buffer = buffers.get("A1");
-    player1.set(
-      {
-        "mute": false,
-        "volume": -65,
-        "autostart": false,
-        "fadeIn": 11,
-        "fadeOut": 2,
-        "loop": false,
-        "loopEnd": "1m",
-        "loopStart": 0,
-        "playbackRate": 1,
-        "reverse": false
-      }
-    );
-    player2.buffer = buffers.get("A2");
-    player2.set(
-      {
-        "mute": false,
-        "volume": -65,
-        "autostart": false,
-        "fadeIn": 11,
-        "fadeOut": 2,
-        "loop": false,
-        "loopEnd": "1m",
-        "loopStart": 0,
-        "playbackRate": 1,
-        "reverse": false
-      }
-    );
-    player3.buffer = buffers.get("A3");
-    player3.set(
-      {
-        "mute": false,
-        "volume": -65,
-        "autostart": false,
-        "fadeIn": 11,
-        "fadeOut": 2,
-        "loop": false,
-        "loopEnd": "1m",
-        "loopStart": 0,
-        "playbackRate": 1,
-        "reverse": false
-      }
-    );
-    player4.buffer = buffers.get("A4");
-    player4.set(
-      {
-        "mute": false,
-        "volume": -65,
-        "autostart": false,
-        "fadeIn": 11,
-        "fadeOut": 2,
-        "loop": false,
-        "loopEnd": "1m",
-        "loopStart": 0,
-        "playbackRate": 1,
-        "reverse": false
-      }
-    );
-    player5.buffer = buffers.get("A5");
-    player5.set(
-      {
-        "mute": false,
-        "volume": -65,
-        "autostart": false,
-        "fadeIn": 11,
-        "fadeOut": 2,
-        "loop": false,
-        "loopEnd": "1m",
-        "loopStart": 0,
-        "playbackRate": 1,
-        "reverse": false
-      }
-    );
-    player6.buffer = buffers.get("A6");
-    player6.set(
-      {
-        "mute": false,
-        "volume": -65,
-        "autostart": false,
-        "fadeIn": 11,
-        "fadeOut": 2,
-        "loop": false,
-        "loopEnd": "1m",
-        "loopStart": 0,
-        "playbackRate": 1,
-        "reverse": false
-      }
-    );
-    seqRow1player.buffer = buffers.get("S1");
-    seqRow1player.set(
-      {
-        "mute": false,
-        "volume": -10,
-        "autostart": false,
-        "fadeIn": 0,
-        "fadeOut": 0,
-        "loop": false,
-        "playbackRate": 1,
-        "reverse": false
-      }
-    );
-    seqRow2player.buffer = buffers.get("S2");
-    seqRow2player.set(
-      {
-        "mute": false,
-        "volume": -10,
-        "autostart": false,
-        "fadeIn": 0,
-        "fadeOut": 0,
-        "loop": false,
-        "playbackRate": 1,
-        "reverse": false
-      }
-    );
-    seqRow3player.buffer = buffers.get("S3");
-    seqRow3player.set(
-      {
-        "mute": false,
-        "volume": -10,
-        "autostart": false,
-        "fadeIn": 0,
-        "fadeOut": 0,
-        "loop": false,
-        "playbackRate": 1,
-        "reverse": false
-      }
-    );
-    Tone.Transport.start();
-    retrieveSavedWork();
+  Tone.start(); // we need this to allow audio to start.
+  soundOn = true;
+  drawSynth();
+  player1.buffer = buffers.get("A1");
+  player1.set(
+    {
+      "mute": false,
+      "volume": -100,
+      "autostart": false,
+      "fadeIn": 0,
+      "fadeOut": 0,
+      "loop": false,
+      "loopEnd": "1m",
+      "loopStart": 0,
+      "playbackRate": 1,
+      "reverse": false
+    }
+  );
+  player2.buffer = buffers.get("A2");
+  player2.set(
+    {
+      "mute": false,
+      "volume": -100,
+      "autostart": false,
+      "fadeIn": 0,
+      "fadeOut": 0,
+      "loop": false,
+      "loopEnd": "1m",
+      "loopStart": 0,
+      "playbackRate": 1,
+      "reverse": false
+    }
+  );
+  player3.buffer = buffers.get("A3");
+  player3.set(
+    {
+      "mute": false,
+      "volume": -100,
+      "autostart": false,
+      "fadeIn": 0,
+      "fadeOut": 0,
+      "loop": false,
+      "loopEnd": "1m",
+      "loopStart": 0,
+      "playbackRate": 1,
+      "reverse": false
+    }
+  );
+  player4.buffer = buffers.get("A4");
+  player4.set(
+    {
+      "mute": false,
+      "volume": -100,
+      "autostart": false,
+      "fadeIn": 0,
+      "fadeOut": 0,
+      "loop": false,
+      "loopEnd": "1m",
+      "loopStart": 0,
+      "playbackRate": 1,
+      "reverse": false
+    }
+  );
+  player5.buffer = buffers.get("A5");
+  player5.set(
+    {
+      "mute": false,
+      "volume": -100,
+      "autostart": false,
+      "fadeIn": 0,
+      "fadeOut": 0,
+      "loop": false,
+      "loopEnd": "1m",
+      "loopStart": 0,
+      "playbackRate": 1,
+      "reverse": false
+    }
+  );
+  player6.buffer = buffers.get("A6");
+  player6.set(
+    {
+      "mute": false,
+      "volume": -100,
+      "autostart": false,
+      "fadeIn": 0,
+      "fadeOut": 0,
+      "loop": true,
+      "loopEnd": "69.854",
+      "loopStart": 0,
+      "playbackRate": 1,
+      "reverse": false
+    }
+  );
+  seqRow1player.buffer = buffers.get("S1");
+  seqRow1player.set(
+    {
+      "mute": false,
+      "volume": -10,
+      "autostart": false,
+      "fadeIn": 0,
+      "fadeOut": 0,
+      "loop": false,
+      "playbackRate": 1,
+      "reverse": false
+    }
+  );
+  seqRow2player.buffer = buffers.get("S2");
+  seqRow2player.set(
+    {
+      "mute": false,
+      "volume": -10,
+      "autostart": false,
+      "fadeIn": 0,
+      "fadeOut": 0,
+      "loop": false,
+      "playbackRate": 1,
+      "reverse": false
+    }
+  );
+  seqRow3player.buffer = buffers.get("S3");
+  seqRow3player.set(
+    {
+      "mute": false,
+      "volume": -10,
+      "autostart": false,
+      "fadeIn": 0,
+      "fadeOut": 0,
+      "loop": false,
+      "playbackRate": 1,
+      "reverse": false
+    }
+  );
+  Tone.Transport.start();
+  Tone.Transport.scheduleRepeat(repeat, '8n'); // call our function 'repeat' every x time (8n or an 8th note in this case)
+  Tone.Transport.scheduleRepeat(play_ = () => {player1.start();}, '5m');
+  Tone.Transport.scheduleRepeat(play_ = () => {player2.start();}, '2m');
+  Tone.Transport.scheduleRepeat(play_ = () => {player3.start();}, '2m');
+  Tone.Transport.scheduleRepeat(play_ = () => {player4.start();}, '2m');
+  Tone.Transport.scheduleRepeat(play_ = () => {player5.start();}, '14m');
+  player6.start();// this one in free time
+  retrieveSavedWork();
 }
 
-function playLooper() {
-  player1.start();
-  player2.start();
-  player3.start();
-  player4.start();
-  player5.start();
-  player6.start();
-}
+// function playLooper(time) {
+//   player1.start();
+//   //sampler.triggerAttackRelease('D3', '4m', time);
+//   player2.start();
+//   player3.start();
+//   player4.start();
+//   player5.start();
+// }
 
 
 function handleClick(e){
@@ -543,10 +549,10 @@ function seqPressed(row, step) {
 
 function setSpeed(tempo) {
   for(let i = 0; i < playerArray.length; i++){
-    playerArray[i].playbackRate = tempo/70;
+    playerArray[i].playbackRate = tempo/originalTempo;
   }
   for(let i = 0; i < seqPlayerArray.length; i++){
-    seqPlayerArray[i].playbackRate = tempo/70;
+    seqPlayerArray[i].playbackRate = tempo/originalTempo;
   }
 }
 
@@ -558,7 +564,7 @@ function buttonPressed(i) {
       treeButtonPositions[i].state = 1; // change the array to reflect that the note is playing
     }
     else { // if the synth is playing that note at the moment
-      playerArray[i].volume.rampTo(-65, 2);
+      playerArray[i].volume.rampTo(-100, 2);
       treeButtonPositions[i].colour = buttonOffColour; //change the colour of the button to off colour
       drawSynth();
       treeButtonPositions[i].state = 0; // change the array to reflect that the note is playing
@@ -571,8 +577,10 @@ let index = 0;
 
     const sampler = new Tone.Sampler({
       urls: {
-        C3: "step3.mp3",
-
+        A3: "step1.flac",
+        G3: "step2.flac",
+        E3: "step3.flac",
+        D3: "loop1_5bars.flac"
       },
       baseUrl: "/sounds/",
     // 	onload: () => {
@@ -586,11 +594,10 @@ function repeat(time) {
   drawSynth(_step)
   for(let i = 0; i < birdRows; i++) {
     //console.log(`row ${i} step ${_step} `);
-    let synth = sampler,
-    note = notes[i];
+    //note = notes[i];
     //console.log(`row ${i} step ${_step} ${birdStuff[i][_step].state}`);
     if(birdStuff[i][_step].state === 1) {
-      //synth.triggerAttackRelease(note, '4n', time);
+      //sampler.triggerAttackRelease(note, '4n', time);
       seqPlayerArray[i].start();
     }
   }
