@@ -96,6 +96,10 @@ let optionTextSize;
 
 let cnvDimension;
 
+let saveText;
+
+let inp;
+
 function preload() {
   sky = loadImage(`/images/background.jpg`);
   birdOn = loadImage(`/images/bird_on.png`);
@@ -180,7 +184,8 @@ function setup() {  // setup p5
     x: width/2,
     y: height/10*9.5,
     text: 'Save',
-    colour: 'rgba(255, 255, 255, 0.9)'
+    colour: 'rgba(255, 255, 255, 0.9)',
+    status: false
   });
 
   for (let i = 0; i < numberOfTreeButtons; i++) { // for each button build mouseState default array
@@ -194,6 +199,13 @@ function setup() {  // setup p5
   welcomeScreen(); // initial screen for project - also allows an elegant place to put in the Tone.start() command.
                     // if animating put an if statement in the draw() function otherwise it will instantly overide it
   createButtonPositions(); // generate the default array info depending on number of buttons
+
+  inp = createInput(([saveText]));
+  inp.id("myInput");
+  inp.parent('p5parent');
+  inp.position(cnvDimension/4, cnvDimension/2);
+  inp.size(cnvDimension/2);
+  inp.hide();
 }
 
 function handleOrientationEvent() {
@@ -264,48 +276,62 @@ function createButtonPositions() {
 
 function drawSynth(step) { // instead of using the draw function at 60 frames a second we will call this function when something changes
 
-  imageMode(CORNER);
+  if(save.status){
+    background(156, 156, 184);
+    inp.show();
+    inp.value(saveText);
+    background(150); // background is grey (remember 5 is maximum because of the setup of colorMode)
+    textSize(cnvDimension/20);
+    textAlign(CENTER, CENTER);
+    text("Copy and paste this link to share your music", width/10, height/10, (width/10) * 8, (height/10) * 3);
+    fill(99, 245, 66);
+    ellipse(width/2, height/5*4, radius*2);
+    fill(0);
+    text("ok", width/2, height/5*4);
+  }else{
+    imageMode(CORNER);
 
-  image(sky, 0, 0, width, height); // place the sky image
-  imageMode(CENTER);
-  image(tree, tree_x, tree_y + (birdHeight/3), treewidth, treeheight); // place the tree image
-  imageMode(CORNER);
-  image(grass, 0, grassPosition, width, (height/5)*2); // place the grass image
-  image(tree2image, (width/10)*8, grassPosition - tree2width, tree2width, tree2width);
+    image(sky, 0, 0, width, height); // place the sky image
+    imageMode(CENTER);
+    image(tree, tree_x, tree_y + (birdHeight/3), treewidth, treeheight); // place the tree image
+    imageMode(CORNER);
+    image(grass, 0, grassPosition, width, (height/5)*2); // place the grass image
+    image(tree2image, (width/10)*8, grassPosition - tree2width, tree2width, tree2width);
 
-  for (let i = 0; i < numberOfTreeButtons; i++) { // draw the looper buttons on tree
-    fill(treeButtonPositions[i].colour);
-    ellipse(treeButtonPositions[i].x, treeButtonPositions[i].y, radius * 2);
-  }
+    for (let i = 0; i < numberOfTreeButtons; i++) { // draw the looper buttons on tree
+      fill(treeButtonPositions[i].colour);
+      ellipse(treeButtonPositions[i].x, treeButtonPositions[i].y, radius * 2);
+    }
 
-  imageMode(CENTER);
+    imageMode(CENTER);
 
-  for(let i = 0; i < birdRows; i++){
-    for(let j = 0; j < birdSteps; j++){
-      if((j === step) && (birdStuff[i][j].state === 0)){ // if this is the current step and the step is "off"
-        image(birdStep1, birdStuff[i][j].x, birdStuff[i][j].y, birdWidth, birdHeight); // then yellow bird for this step
-      }else if((j === step) && (birdStuff[i][j].state === 1)){ // if this is the current step and the step is "on"
-        image(birdStep2, birdStuff[i][j].x, birdStuff[i][j].y, birdWidth, birdHeight); // then purple bird for this step
-      }
-      else{
-        image(birdStuff[i][j].image, birdStuff[i][j].x, birdStuff[i][j].y, birdWidth, birdHeight); // otherwise bird colour reflects step state
+    for(let i = 0; i < birdRows; i++){
+      for(let j = 0; j < birdSteps; j++){
+        if((j === step) && (birdStuff[i][j].state === 0)){ // if this is the current step and the step is "off"
+          image(birdStep1, birdStuff[i][j].x, birdStuff[i][j].y, birdWidth, birdHeight); // then yellow bird for this step
+        }else if((j === step) && (birdStuff[i][j].state === 1)){ // if this is the current step and the step is "on"
+          image(birdStep2, birdStuff[i][j].x, birdStuff[i][j].y, birdWidth, birdHeight); // then purple bird for this step
+        }
+        else{
+          image(birdStuff[i][j].image, birdStuff[i][j].x, birdStuff[i][j].y, birdWidth, birdHeight); // otherwise bird colour reflects step state
+        }
       }
     }
-  }
 
-  textFont('Helvetica');
-  textSize(optionTextSize);
-  fill(slower.colour);
-  text(slower.text, slower.x, slower.y);
-  fill(faster.colour);
-  text(faster.text, faster.x, faster.y);
-  fill(save.colour);
-  text(save.text, save.x, save.y);
+    textFont('Helvetica');
+    textSize(optionTextSize);
+    fill(slower.colour);
+    text(slower.text, slower.x, slower.y);
+    fill(faster.colour);
+    text(faster.text, faster.x, faster.y);
+    fill(save.colour);
+    text(save.text, save.x, save.y);
 
-  if(bpmShow){
-    textSize(bpmTextSize);
-    fill('rgba(255, 255, 255, 0.7)');
-    text(`BPM ${Math.round(Tone.Transport.bpm.value)}`, width/2, height/2);
+    if(bpmShow){
+      textSize(bpmTextSize);
+      fill('rgba(255, 255, 255, 0.7)');
+      text(`BPM ${Math.round(Tone.Transport.bpm.value)}`, width/2, height/2);
+    }
   }
 }
 
@@ -465,68 +491,76 @@ function startAudio() {
 
 function handleClick(e){
   if(soundOn) {
-
-    for (let i = 0; i < numberOfTreeButtons; i++) {
-      let d = dist(mouseX, mouseY, treeButtonPositions[i].x, treeButtonPositions[i].y);
+    if(save.status){
+      let d = dist(mouseX, mouseY, width/2, height/5*4);
       if (d < radius) {
-        buttonPressed(i);
+        save.status = false;
+        copySave();
+        inp.hide();
       }
-    }
-
-    for(let i = 0; i < birdRows; i++){
-      for(let j = 0; j < birdSteps; j++){
-        let d = dist(mouseX, mouseY, birdStuff[i][j].x, birdStuff[i][j].y);
-        if (d < birdHeight/2) {
-          seqPressed(i, j);
+    }else{
+      for (let i = 0; i < numberOfTreeButtons; i++) {
+        let d = dist(mouseX, mouseY, treeButtonPositions[i].x, treeButtonPositions[i].y);
+        if (d < radius) {
+          buttonPressed(i);
         }
       }
-    }
 
-    if(isMouseInsideText(slower.text, slower.x, slower.y)){
-      console.log("slower");
-      if(Tone.Transport.bpm.value > 35){
-        Tone.Transport.bpm.value = Tone.Transport.bpm.value - 5;
+      for(let i = 0; i < birdRows; i++){
+        for(let j = 0; j < birdSteps; j++){
+          let d = dist(mouseX, mouseY, birdStuff[i][j].x, birdStuff[i][j].y);
+          if (d < birdHeight/2) {
+            seqPressed(i, j);
+          }
+        }
       }
-      setSpeed(Tone.Transport.bpm.value);
-      console.log(`bpm ${Math.round(Tone.Transport.bpm.value)}`);
-      slower.colour = 'rgba(255, 0, 255, 0.9)'
-      bpmShow = true;
-      drawSynth();
-      setTimeout(() => {
-        bpmShow = false;
-        slower.colour = 'rgba(255, 255, 255, 0.9)';
-        drawSynth();
-      }, 1000);
-    }
 
-    if(isMouseInsideText(faster.text, faster.x, faster.y)){
-      console.log("faster");
-      if(Tone.Transport.bpm.value < 195){
-        Tone.Transport.bpm.value = Tone.Transport.bpm.value + 5;
+      if(isMouseInsideText(slower.text, slower.x, slower.y)){
+        console.log("slower");
+        if(Tone.Transport.bpm.value > 35){
+          Tone.Transport.bpm.value = Tone.Transport.bpm.value - 5;
+        }
+        setSpeed(Tone.Transport.bpm.value);
+        console.log(`bpm ${Math.round(Tone.Transport.bpm.value)}`);
+        slower.colour = 'rgba(255, 0, 255, 0.9)'
+        bpmShow = true;
+        drawSynth();
+        setTimeout(() => {
+          bpmShow = false;
+          slower.colour = 'rgba(255, 255, 255, 0.9)';
+          drawSynth();
+        }, 1000);
       }
-      setSpeed(Tone.Transport.bpm.value);
-      console.log(`bpm ${Math.round(Tone.Transport.bpm.value)}`);
-      faster.colour = 'rgba(255, 0, 255, 0.9)'
-      bpmShow = true;
-      drawSynth();
-      setTimeout(() => {
-        bpmShow = false;
-        faster.colour = 'rgba(255, 255, 255, 0.9)';
-        drawSynth();
-      }, 1000);
-    }
 
-    if(isMouseInsideText(save.text, save.x, save.y)){
-      console.log("save");
-      save.colour = 'rgba(255, 0, 255, 0.9)'
-      saveSeq();
-      drawSynth();
-      setTimeout(() => {
-        save.colour = 'rgba(255, 255, 255, 0.9)';
+      if(isMouseInsideText(faster.text, faster.x, faster.y)){
+        console.log("faster");
+        if(Tone.Transport.bpm.value < 195){
+          Tone.Transport.bpm.value = Tone.Transport.bpm.value + 5;
+        }
+        setSpeed(Tone.Transport.bpm.value);
+        console.log(`bpm ${Math.round(Tone.Transport.bpm.value)}`);
+        faster.colour = 'rgba(255, 0, 255, 0.9)'
+        bpmShow = true;
         drawSynth();
-      }, 1000);
-    }
+        setTimeout(() => {
+          bpmShow = false;
+          faster.colour = 'rgba(255, 255, 255, 0.9)';
+          drawSynth();
+        }, 1000);
+      }
 
+      if(isMouseInsideText(save.text, save.x, save.y)){
+        console.log("save");
+        save.status = true;
+        save.colour = 'rgba(255, 0, 255, 0.9)'
+        saveSeq();
+        drawSynth();
+        setTimeout(() => {
+          save.colour = 'rgba(255, 255, 255, 0.9)';
+          drawSynth();
+        }, 1000);
+      }
+    }
   }else{
     startAudio();
   }
@@ -667,6 +701,7 @@ function saveSeq() {
   url_ob.hash = `#${hexToSave}`;
   var new_url = url_ob.href;
   document.location.href = new_url;
+  saveText = new_url;
 }
 
 
@@ -736,4 +771,19 @@ if(isNaN(savedTempo) === false){
 
 }
 
+}
+
+function copySave() {
+  /* Get the text field */
+  var copyText = document.getElementById("myInput");
+
+  /* Select the text field */
+  copyText.select();
+  copyText.setSelectionRange(0, 99999); /* For mobile devices */
+
+  /* Copy the text inside the text field */
+  document.execCommand("copy");
+
+  /* Alert the copied text */
+  //alert("Copied the text: " + copyText.value);
 }
